@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:   # allow manual run from GitHub UI
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      # Step 2: Debug - list files in repo
+      # Step 2: Debug - list repo files
       - name: List repo files
         run: ls -R
 
@@ -24,12 +24,12 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu   # ✅ Ubuntu AMI
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "."        # ✅ send entire repo, avoids "./*" issue
+          source: "."              # send entire repo
           target: /home/ubuntu/recipehub
-          overwrite: true    # ✅ overwrite files if they already exist
-          debug: true        # ✅ see detailed logs
+          overwrite: true
+          debug: true
 
       # Step 4: SSH into EC2 and deploy with Docker Compose
       - name: Deploy on EC2 with Docker Compose
@@ -41,7 +41,7 @@ jobs:
           script_stop: true
           debug: true
           script: |
-            # Make sure target folder exists
+            # Ensure target folder exists
             mkdir -p ~/recipehub
             cd ~/recipehub
 
@@ -66,7 +66,7 @@ jobs:
               sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
               sudo systemctl enable docker
               sudo systemctl start docker
-              sudo usermod -aG docker $USER
+              sudo usermod -aG docker ubuntu
             fi
 
             # Stop old containers, rebuild, and restart
