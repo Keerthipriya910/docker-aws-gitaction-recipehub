@@ -26,8 +26,10 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu   # ✅ Ubuntu AMI
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./*"
-          target: /home/ubuntu/recipehub   # ✅ change folder name here
+          source: "."        # ✅ send entire repo, avoids "./*" issue
+          target: /home/ubuntu/recipehub
+          overwrite: true    # ✅ overwrite files if they already exist
+          debug: true        # ✅ see detailed logs
 
       # Step 4: SSH into EC2 and deploy with Docker Compose
       - name: Deploy on EC2 with Docker Compose
@@ -39,6 +41,8 @@ jobs:
           script_stop: true
           debug: true
           script: |
+            # Make sure target folder exists
+            mkdir -p ~/recipehub
             cd ~/recipehub
 
             # Install Git if missing
@@ -62,6 +66,7 @@ jobs:
               sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
               sudo systemctl enable docker
               sudo systemctl start docker
+              sudo usermod -aG docker $USER
             fi
 
             # Stop old containers, rebuild, and restart
